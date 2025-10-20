@@ -1,7 +1,7 @@
 # Screensaver of the Day
 
 <p>This is a script that powers a Bluesky bot which posts a randomly selected pre-recorded screensaver video and some info about it from a database daily at 12:00 UTC.</p>
-<p>You can find the link to the bot [here](https://bsky.app/profile/screensaverotd.bsky.social).</p>
+<p>You can find the link to the bot <a href="https://bsky.app/profile/screensaverotd.bsky.social">here</a>.</p>
 
 
 ## Requirements
