@@ -14,6 +14,12 @@
 - A directory <code>videos</code> in the root directory of the project which contains .mp4 files titled following the keys in <code>ScreensaverOTD.db</code>. Note, videos uploaded to Bluesky must be **under 100 MB** and **under three minutes** in length.
 
 ## To Do
+
 - Logging
 - Direct Message forwarding
 - Front end for analysis
+- Themes
+
+## Version History
+
+<strong>v1.0</strong> - <em>2025-10-21</em>: First official release. Posts a random screensaver to Bluesky once daily at 12:00 PM UTC. Includes relevant information which is pulled from a locally maintained database file and a locally saved video file. Launched with <em>51</em> screensavers supported.
