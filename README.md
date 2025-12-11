@@ -20,6 +20,10 @@
 - Front end for analysis
 - Themes
 
-## Version History
+## Version History/Changelog
 
-<strong>v1.0</strong> - <em>2025-10-21</em>: First official release. Posts a random screensaver to Bluesky once daily at 12:00 PM UTC. Includes relevant information which is pulled from a locally maintained database file and a locally saved video file. Launched with <em>51</em> screensavers supported.
+<strong>v1.0</strong> - <em>2025-10-21</em>: First official release. Posts a random screensaver to Bluesky once daily at 12:00 PM UTC. Includes relevant information which is pulled from a locally maintained database file and a locally saved video file. Launched with <em>51</em> screensavers supported and <em>179</em> in the database.
+
+<em>2025-10-28</em>: Discovered some incorrect info in the database. Corrected it.
+
+<em>2025-12-10</em>: Recorded 24 new screensavers and rerecorded 1 existing. Realized that one screensaver was incorrectly named, so that was fixed. Total screensavers up to <em>75</em> now.
