@@ -16,16 +16,19 @@ ul           { list-style-type: none; }
 li           { padding: 3px; 
                border: 1px solid transparent; }
 
-a:link       { text-decoration: none; }
+a:link       { text-decoration: none; 
+               color: #0063ed; }
+
+a:visited    { color: #7221bd; }
 
 .toc         { display: block;
                padding: 3px;
                border: 1px solid transparent; }
 
-.toc:hover   { background: #4f4f4f;
+.toc:hover   { background: #808080;
                border: 1px solid #e0e0e0;
                text-decoration: none; }
 
-.answer      { background: #4f4f4f;
+.answer      { background: #808080;
                padding: 6px;
                border: 1px solid #e0e0e0; }
