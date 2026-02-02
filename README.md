@@ -27,3 +27,5 @@
 <em>2025-10-28</em>: Discovered some incorrect info in the database. Corrected it.
 
 <em>2025-12-10</em>: Recorded 24 new screensavers and rerecorded 1 existing. Realized that one screensaver was incorrectly named, so that was fixed. Total screensavers up to <em>75</em> now.
+
+<em>2026-02-01</em>: Recorded 16 new screensavers and added 1 new one to the database. Total screensavers up to <em>91</em> now. Created the FAQ site (<code>sotdfaq.html</code>, <code>sotd.css</code>, and <code>robots.txt</code>) for answering basic questions.
