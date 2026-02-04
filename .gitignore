@@ -1,6 +1,11 @@
 # Specific files
 videos/
 ScreensaverOTD.db
+badgeicon/
+test.py
+sotd.service
+sotd.timer
+*.xlsx
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
