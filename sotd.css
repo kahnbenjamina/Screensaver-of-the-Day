@@ -17,18 +17,18 @@ li           { padding: 3px;
                border: 1px solid transparent; }
 
 a:link       { text-decoration: none; 
-               color: #0063ed; }
+               color: #0069D1; }
 
-a:visited    { color: #7221bd; }
+a:visited    { color: #7022B5; }
 
 .toc         { display: block;
                padding: 3px;
                border: 1px solid transparent; }
 
-.toc:hover   { background: #808080;
+.toc:hover   { background: #969696;
                border: 1px solid #e0e0e0;
                text-decoration: none; }
 
-.answer      { background: #808080;
+.answer      { background: #969696;
                padding: 6px;
                border: 1px solid #e0e0e0; }
