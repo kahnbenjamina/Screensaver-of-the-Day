@@ -31,3 +31,5 @@
 <em>2026-02-01</em>: Recorded 16 new screensavers and added 1 new one to the database. Total screensavers recorded up to <em>91</em> now and total in database up to <em>180</em>. Created the FAQ site (<code>sotdfaq.html</code>, <code>sotd.css</code>, and <code>robots.txt</code>) for answering basic questions.
 
 <em>2026-02-03</em>: Made updates to refine the website. Added <code>favicon.ico</code> and <code>toaster.png</code> and put them into the <code>faqsite</code> subfolder along with the three existing website files. Renamed <code>sotdfaq.html</code> to <code>index.html</code>.
+
+<em>2026-03-01</em>: Discovered and fixed an edge case where a failed connection to Bluesky meant the database was updated as if a screensaver was uploaded even if it wasn't. Access to Bluesky is now confirmed before the database is accessed. 1 new screensaver added to the database.

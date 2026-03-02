@@ -1,5 +1,6 @@
 import os
 import sqlite3
+import sys
 from datetime import datetime
 from pathlib import Path
 
@@ -10,6 +11,22 @@ from httpx import Timeout
 pathdir = Path(__file__).parent
 
 date = datetime.today().strftime('%Y-%m-%d')
+
+# in the event Bluesky cannot be connected to, break early so the database is not affected
+try:
+    env_path = Path.joinpath(pathdir, '.env')
+    load_dotenv(dotenv_path=env_path)
+
+    # bluesky account name and app ID from .env file in root directory of project
+    user = os.getenv("ACCTNAME")
+    pw = os.getenv("APPID")
+
+    request = Request(timeout=Timeout(timeout=None)) # no timeout on the client, it's normally quite strict
+
+    client = Client(request=request)
+    client.login(user, pw)
+except:
+    sys.exit("Connection to Bluesky failed.")
 
 # place .db file in root directory of project
 conn = sqlite3.connect(Path.joinpath(pathdir, 'ScreensaverOTD.db'))
@@ -33,18 +50,6 @@ conn.commit()
 conn.close()
 
 alttext = f"A video of the screensaver {fullname} created by {creator} in {year} for {product} on {system}."
-
-env_path = Path.joinpath(pathdir, '.env')
-load_dotenv(dotenv_path=env_path)
-
-# bluesky account name and app ID from .env file in root directory of project
-user = os.getenv("ACCTNAME")
-pw = os.getenv("APPID")
-
-request = Request(timeout=Timeout(timeout=None)) # no timeout on the client, it's normally quite strict
-
-client = Client(request=request)
-client.login(user, pw)
 
 with open(Path.joinpath(pathdir, "videos", f"{key}.mp4"), 'rb') as f:
     vid_data = f.read()
