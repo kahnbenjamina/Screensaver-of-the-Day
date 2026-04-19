@@ -8,60 +8,47 @@ from atproto import Client, Request, client_utils, models
 from dotenv import load_dotenv
 from httpx import Timeout
 
+from bskyupload import *
+from ytupload import ytupload
+
 pathdir = Path(__file__).parent
 
 date = datetime.today().strftime('%Y-%m-%d')
 
 # in the event Bluesky cannot be connected to, break early so the database is not affected
 try:
-    env_path = Path.joinpath(pathdir, '.env')
-    load_dotenv(dotenv_path=env_path)
-
-    # bluesky account name and app ID from .env file in root directory of project
-    user = os.getenv("ACCTNAME")
-    pw = os.getenv("APPID")
-
-    request = Request(timeout=Timeout(timeout=None)) # no timeout on the client, it's normally quite strict
-
-    client = Client(request=request)
-    client.login(user, pw)
+    client = bskyconn(pathdir)
 except:
     sys.exit("Connection to Bluesky failed.")
 
 # place .db file in root directory of project
 conn = sqlite3.connect(Path.joinpath(pathdir, 'ScreensaverOTD.db'))
+conn.row_factory = sqlite3.Row
 cur = conn.cursor()
 
-# only selects screensavers with videos and that haven't been used since the last reset
-fullQuery = "SELECT key, fullname, year, creator, product, publisher, os, vidheight, vidwidth, timesused FROM scrnsvrotd WHERE active=1 AND used=0 ORDER BY RANDOM()"
+# only selects screensavers with videos (active) and that haven't been used since the last reset (used)
+fullQuery = "SELECT * FROM scrnsvrotd WHERE active=1 AND used=0 ORDER BY RANDOM()"
 
 query = cur.execute(fullQuery)
 
 try:
-    key, fullname, year, creator, product, publisher, system, horiz, vert, times = query.fetchone()
+    output = query.fetchone()
 except TypeError as e: # if there are no unused active screensavers, resets all active to unused
     cur.execute("UPDATE scrnsvrotd SET used = 0 WHERE used = 1")
     query = cur.execute(fullQuery)
-    key, fullname, year, creator, product, publisher, system, horiz, vert, times = query.fetchone()
+    output = query.fetchone()
 
-cur.execute("UPDATE scrnsvrotd SET used = 1, lastused = ?, timesused = ? WHERE key = ?", (date, times+1, key))
+bskyupload(output, date, pathdir, client)
+
+# if the video hasn't been uploaded to YouTube yet
+if output['ytid'] is None:
+    try: # saves the id of the video to the database
+        id = ytupload(output)
+        cur.execute("UPDATE scrnsvrotd SET used = 1, lastused = ?, timesused = ?, ytid = ? WHERE key = ?", (date, output['timesused']+1, id, output['key']))
+    except: # if the video can't be uploaded, don't break the database
+        cur.execute("UPDATE scrnsvrotd SET used = 1, lastused = ?, timesused = ? WHERE key = ?", (date, output['timesused']+1, output['key']))
+else: # do not upload if an instance of the video has already been uploaded
+    cur.execute("UPDATE scrnsvrotd SET used = 1, lastused = ?, timesused = ? WHERE key = ?", (date, output['timesused']+1, output['key']))
 
 conn.commit()
 conn.close()
-
-alttext = f"A video of the screensaver {fullname} created by {creator} in {year} for {product} on {system}."
-
-with open(Path.joinpath(pathdir, "videos", f"{key}.mp4"), 'rb') as f:
-    vid_data = f.read()
-
-aspect_ratio = models.AppBskyEmbedDefs.AspectRatio(height=int(horiz), width=int(vert))
-
-# post text
-text_builder = client_utils.TextBuilder()
-text_builder.tag('#ScreensaverOTD', 'ScreenSaverOTD')
-text_builder.text(f" - {date}:\n{fullname}\n\nYear: {year}\nCreator: {creator}\nProduct: {product}\nPublisher: {publisher}\nSystems: {system}\nResolution: {horiz}x{vert}\n\n")
-text_builder.tag('#Screensaver', 'Screensaver')
-text_builder.text(" ")
-text_builder.tag('#RetroComputing', 'RetroComputing')
-
-client.send_video(text=text_builder, video=vid_data, video_alt=alttext, video_aspect_ratio=aspect_ratio, langs=['en-US'])

@@ -6,6 +6,7 @@ test.py
 sotd.service
 sotd.timer
 *.xlsx
+*.json
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
