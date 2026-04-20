@@ -45,7 +45,8 @@ if output['ytid'] is None:
     try: # saves the id of the video to the database
         id = ytupload(output)
         cur.execute("UPDATE scrnsvrotd SET used = 1, lastused = ?, timesused = ?, ytid = ? WHERE key = ?", (date, output['timesused']+1, id, output['key']))
-    except: # if the video can't be uploaded, don't break the database
+    except error as e: # if the video can't be uploaded, don't break the database
+        print(e)
         cur.execute("UPDATE scrnsvrotd SET used = 1, lastused = ?, timesused = ? WHERE key = ?", (date, output['timesused']+1, output['key']))
 else: # do not upload if an instance of the video has already been uploaded
     cur.execute("UPDATE scrnsvrotd SET used = 1, lastused = ?, timesused = ? WHERE key = ?", (date, output['timesused']+1, output['key']))
