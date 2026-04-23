@@ -43,7 +43,7 @@ bskyupload(output, date, pathdir, client)
 # if the video hasn't been uploaded to YouTube yet
 if output['ytid'] is None:
     try: # saves the id of the video to the database
-        id = ytupload(output)
+        id = ytupload(output, pathdir)
         cur.execute("UPDATE scrnsvrotd SET used = 1, lastused = ?, timesused = ?, ytid = ? WHERE key = ?", (date, output['timesused']+1, id, output['key']))
     except Exception as e: # if the video can't be uploaded, don't break the database
         print(e)

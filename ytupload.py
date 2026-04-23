@@ -3,6 +3,7 @@ import os
 import random
 import sys
 import time
+import json
 
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
@@ -66,16 +67,16 @@ https://developers.google.com/api-client-library/python/guide/aaa_client_secrets
 VALID_PRIVACY_STATUSES = ("public", "private", "unlisted")
 
 # checks the generated json file which includes the name of this file
-def get_authenticated_service():
-  flow = flow_from_clientsecrets(CLIENT_SECRETS_FILE,
+def get_authenticated_service(pathdir):
+  flow = flow_from_clientsecrets(pathdir.joinpath(CLIENT_SECRETS_FILE),
     scope=YOUTUBE_UPLOAD_SCOPE,
     message=MISSING_CLIENT_SECRETS_MESSAGE)
 
-  storage = Storage(f"{Path(__file__).name}-oauth2.json")
+  storage = Storage(pathdir.joinpath(f"{Path(__file__).name}-oauth2.json"))
   credentials = storage.get()
 
   if credentials is None or credentials.invalid:
-    credentials = run_flow(flow, storage, f"{Path(__file__).name}-oauth2.json")
+    credentials = run_flow(flow, storage, pathdir.joinpath(f"{Path(__file__).name}-oauth2.json"))
 
   return build(YOUTUBE_API_SERVICE_NAME, YOUTUBE_API_VERSION,
     http=credentials.authorize(httplib2.Http()))
@@ -154,28 +155,9 @@ def resumable_upload(insert_request):
   return response['id']
 
 
-    
-# if __name__ == '__main__':
-#   argparser.add_argument("--file", required=True, help="Video file to upload")
-#   argparser.add_argument("--title", help="Video title", default="Test Title")
-#   argparser.add_argument("--description", help="Video description", default="Test Description")
-#   argparser.add_argument("--category", default="22",
-#     help="Numeric video category. " +
-#       "See https://developers.google.com/youtube/v3/docs/videoCategories/list")
-#   argparser.add_argument("--keywords", help="Video keywords, comma separated",
-#     default="")
-#   argparser.add_argument("--privacyStatus", choices=VALID_PRIVACY_STATUSES,
-#     default=VALID_PRIVACY_STATUSES[0], help="Video privacy status.")
-#   args = argparser.parse_args()
-
-#   print(args)
-
-  # if not os.path.exists(args.file):
-    # exit("Please specify a valid file using the --file= parameter.")
-
 # function to be run by main
-def ytupload(row):
-  youtube = get_authenticated_service()
+def ytupload(row, pathdir):
+  youtube = get_authenticated_service(pathdir)
 
   try:
     id = initialize_upload(youtube, row)
