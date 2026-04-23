@@ -7,6 +7,7 @@ sotd.service
 sotd.timer
 *.xlsx
 *.json
+ytauth.py
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

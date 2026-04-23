@@ -3,7 +3,6 @@ import os
 import random
 import sys
 import time
-import json
 
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
