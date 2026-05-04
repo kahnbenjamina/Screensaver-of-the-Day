@@ -39,8 +39,9 @@ RETRIABLE_STATUS_CODES = [500, 502, 503, 504]
 #   https://developers.google.com/api-client-library/python/guide/aaa_client_secrets
 CLIENT_SECRETS_FILE = "client_secrets.json"
 
-# This OAuth 2.0 access scope allows an application to access the authenticated user's YouTube channel.
-YOUTUBE_UPLOAD_SCOPE = "https://www.googleapis.com/auth/youtube"
+# This OAuth 2.0 access scope allows an application to upload files to the
+# authenticated user's YouTube channel, but doesn't allow other types of access.
+YOUTUBE_UPLOAD_SCOPE = "https://www.googleapis.com/auth/youtube.upload"
 YOUTUBE_API_SERVICE_NAME = "youtube"
 YOUTUBE_API_VERSION = "v3"
 
@@ -79,51 +80,6 @@ def get_authenticated_service(pathdir):
   return build(YOUTUBE_API_SERVICE_NAME, YOUTUBE_API_VERSION,
     http=credentials.authorize(httplib2.Http()))
 
-# creates of a new playlist
-def newplaylist(youtube, product):
-  body=dict(
-    snippet=dict(
-      title=product
-    ),
-    status=dict(
-      privacyStatus="public",
-    )
-  )
-
-  # Call the API's playlists.insert method to create the new playlist.
-  newpl = youtube.playlists().insert(
-    part=",".join(body.keys()),
-    body=body
-  )
-
-  response = newpl.execute()
-
-  return response['id']
-
-# code to handle returning the id of the required playlist (existing or newly created)
-def playlist(youtube, product):
-  # Call the API's playlists.list method to get a list of the IDs and info about each playlist.
-  getlist = youtube.playlists().list(
-    part="id, snippet",
-    maxResults=100,
-    mine=True
-  )
-  response = getlist.execute()
-
-  plids = [element['id'] for element in response['items']] # playlist IDs
-  pltitles = [element['snippet']['title'] for element in response['items']] # playlist names
-
-  # if the required playlist already exists
-  if product in pltitles:
-    id = plids[pltitles.index(product)]
-    print(f"{product} playlist found!")
-  else: # if the required playlist doesn't exist, make it
-    id = newplaylist(youtube, product)
-    print(f"{product} playlist created!")
-
-  return id
-
-# the metadata of the video and the command to upload it
 def initialize_upload(youtube, row):
   # Generate the video's metadata
   body=dict(
@@ -197,41 +153,14 @@ def resumable_upload(insert_request):
   
   return response['id']
 
-# adds the newly uploaded video to the proper playlist
-def vid2pl(youtube, plid, vidid):
-  body=dict(
-    snippet=dict(
-      playlistId=plid,
-      resourceId=dict(
-        kind="youtube#video",
-        videoId=vidid
-      )
-    )
-  )
-
-  # Call the API's playlistItems.insert method to add the video to the specific playlist.
-  plinsert = youtube.playlistItems().insert(
-    part=",".join(body.keys()),
-    body=body
-  )
-
-  response = plinsert.execute()
-
-  return response['id']
 
 # function to be run by main
 def ytupload(row, pathdir):
-  # authenticates youtube access
   youtube = get_authenticated_service(pathdir)
 
-  # gets id of playlist (and may create new playlist)
-  plid = playlist(youtube, row['product'])
-
-  # uploads the video and adds it to the proper playlist
   try:
-    vidid = initialize_upload(youtube, row)
-    id = vid2pl(youtube, plid, vidid)
+    id = initialize_upload(youtube, row)
   except HttpError as e:
     print ("An HTTP error %d occurred:\n%s" % (e.resp.status, e.content))
 
-  return id # id of the uploaded video as an item in the playlist
+  return id # id of the uploaded video
