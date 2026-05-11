@@ -125,11 +125,15 @@ def playlist(youtube, product):
 
 # the metadata of the video and the command to upload it
 def initialize_upload(youtube, row):
+  # YouTube's title caps out at 100 characters
+  name = row['shortname'] if row['shortname'] is not None else row['fullname']
+  prod = row['prodshort'] if row['prodshort'] is not None else row['product']
+  
   # Generate the video's metadata
   body=dict(
     snippet=dict(
-      title=f'"{row['fullname']}" screensaver from {row['product']} ({row['year']})',
-      description=(f"Screensaver Name: {row['fullname']}\n\nYear: {row['year']}\nCreator: {row['creator']}\nProduct: {row['product']}\nPublisher: {row['publisher']}\nSystems Made For: {row['os']}\nResolution Recorded At: {row['vidheight']}x{row['vidwidth']}\n\nFor daily screensavers, check out the Screensaver of the Day Bluesky account: bsky.app/profile/screensaverotd.bsky.social\nFor more information on the project, check out the FAQs: sotdfaq.neocities.org/"),
+      title=f'"{name}" screensaver from {prod} ({row['year']})',
+      description=(f"Screensaver Full Name: {row['fullname']}\n\nYear: {row['year']}\nCreator: {row['creator']}\nProduct: {row['product']}\nPublisher: {row['publisher']}\nSystems Made For: {row['os']}\nResolution Recorded At: {row['vidheight']}x{row['vidwidth']}\n\nFor daily screensavers, check out the Screensaver of the Day Bluesky account: bsky.app/profile/screensaverotd.bsky.social\nFor more information on the project, check out the FAQs: sotdfaq.neocities.org/"),
       tags=['screensaver', 'retrocomputing', 'screensavermuseum'],
       categoryId="28" # Science and Technology
     ),
@@ -227,11 +231,8 @@ def ytupload(row, pathdir):
   # gets id of playlist (and may create new playlist)
   plid = playlist(youtube, row['product'])
 
-  # uploads the video and adds it to the proper playlist
-  try:
-    vidid = initialize_upload(youtube, row)
-    id = vid2pl(youtube, plid, vidid)
-  except HttpError as e:
-    print ("An HTTP error %d occurred:\n%s" % (e.resp.status, e.content))
+  # uploads the video and adds it to the proper playlist (try, except handled in main)
+  vidid = initialize_upload(youtube, row)
+  id = vid2pl(youtube, plid, vidid)
 
-  return id # id of the uploaded video as an item in the playlist
+  return vidid # id of the uploaded video

@@ -2,7 +2,7 @@
 videos/
 ScreensaverOTD.db
 badgeicon/
-test.py
+test*
 sotd.service
 sotd.timer
 *.xlsx
