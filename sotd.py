@@ -61,7 +61,7 @@ if datetime.today().weekday() == 6:
     cur.execute(f"INSERT INTO bskystats VALUES {notifs}")
 
     ytstats = ytanalytics(pathdir)['rows']
-    cur.executemany("INSERT INTO ytstats VALUES(?,?,?,?,?,?,?,?,?,?,?,?);", response)
+    cur.executemany("INSERT INTO ytstats VALUES(?,?,?,?,?,?,?,?,?,?,?,?);", ytstats)
 
 conn.commit()
 conn.close()
