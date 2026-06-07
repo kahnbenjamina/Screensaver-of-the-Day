@@ -1,6 +1,8 @@
 import os
 import sqlite3
 import sys
+import pandas as pd
+
 from datetime import datetime
 from pathlib import Path
 
@@ -9,7 +11,7 @@ from dotenv import load_dotenv
 from httpx import Timeout
 
 from bskyupload import *
-from ytupload import ytupload
+from ytupload import *
 
 pathdir = Path(__file__).parent
 
@@ -50,6 +52,16 @@ if output['ytid'] is None:
         cur.execute("UPDATE scrnsvrotd SET used = 1, lastused = ?, timesused = ? WHERE key = ?", (date, output['timesused']+1, output['key']))
 else: # do not upload if an instance of the video has already been uploaded
     cur.execute("UPDATE scrnsvrotd SET used = 1, lastused = ?, timesused = ? WHERE key = ?", (date, output['timesused']+1, output['key']))
+
+if datetime.today().weekday() == 6:
+    notifs = bskynotifs(client)
+    dms = bskydms(client)
+    notifs.extend([len(dms), len(pd.unique(dms['sender'])), len(dms[dms['newConvo'] == True])])
+    notifs = str(notifs).replace('[', '(').replace(']', ')')
+    cur.execute(f"INSERT INTO bskystats VALUES {notifs}")
+
+    ytstats = ytanalytics(pathdir)['rows']
+    cur.executemany("INSERT INTO ytstats VALUES(?,?,?,?,?,?,?,?,?,?,?,?);", response)
 
 conn.commit()
 conn.close()

@@ -14,9 +14,9 @@
     - <code>ACCTNAME</code>: The name of the Bluesky account.
     - <code>APPID</code>: The app password you generated in the above Bluesky account.
 - Python requirements can be found in the file <code>requirements.txt</code>. It can be easily installed using <code>python install -r requirements.txt</code>.
-- A directory <code>videos</code> in the root directory of the project which contains .mp4 files titled following the keys in <code>ScreensaverOTD.db</code>. Note: videos uploaded to Bluesky must be **under 100 MB** and **under three minutes** in length.
+- A directory <code>videos</code> in the root directory of the project which contains .mp4 files titled following the keys in <code>ScreensaverOTD.db</code>. Note: videos uploaded to Bluesky must be **under 300 MB** and **under three minutes** in length.
 - For YouTube uploads, you will need a <code>client_secrets.json</code> file which contains your Google OAuth client ID and secret variables. The Google Cloud Console should give an option to directly download this file.
-- NOTE: The refresh access tokens for Google OAuth expire after **7 days** and require manual browser-based reauthentication. The code currently accounts for token expiry errors in order to not break. In the future, I will look into ways around this, but from quick research, this just seems to be a built-in limitation.
+- NOTE: The refresh access tokens for Google OAuth expire after **7 days** and require manual browser-based reauthentication. The code currently accounts for token expiry errors in order to not break. In the future, I will look into ways around this, but from quick research, this just seems to be a built-in limitation. EDIT (2026-06-05): It seems like the OAuth expiry isn't actually a thing? Will do more testing.
 
 ## To Do
 

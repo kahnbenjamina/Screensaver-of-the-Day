@@ -3,6 +3,8 @@ import os
 import random
 import sys
 import time
+import google.oauth2.credentials
+import google_auth_oauthlib.flow
 
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
@@ -11,6 +13,7 @@ from oauth2client.client import flow_from_clientsecrets
 from oauth2client.file import Storage
 from oauth2client.tools import argparser, run_flow
 from pathlib import Path
+from datetime import datetime, timedelta
 
 
 # Explicitly tell the underlying HTTP transport library not to retry, since
@@ -43,6 +46,9 @@ CLIENT_SECRETS_FILE = "client_secrets.json"
 YOUTUBE_UPLOAD_SCOPE = "https://www.googleapis.com/auth/youtube"
 YOUTUBE_API_SERVICE_NAME = "youtube"
 YOUTUBE_API_VERSION = "v3"
+YOUTUBE_ANALYTICS_SCOPE = "https://www.googleapis.com/auth/yt-analytics.readonly"
+ANALYTICS_API_SERVICE_NAME = "youtubeAnalytics"
+ANALYTICS_API_VERSION = "v2"
 
 # This variable defines a message to display if the CLIENT_SECRETS_FILE is
 # missing.
@@ -67,7 +73,7 @@ VALID_PRIVACY_STATUSES = ("public", "private", "unlisted")
 # checks the generated json file which includes the name of this file
 def get_authenticated_service(pathdir):
   flow = flow_from_clientsecrets(pathdir.joinpath(CLIENT_SECRETS_FILE),
-    scope=YOUTUBE_UPLOAD_SCOPE,
+    scope=[YOUTUBE_UPLOAD_SCOPE, YOUTUBE_ANALYTICS_SCOPE],
     message=MISSING_CLIENT_SECRETS_MESSAGE)
 
   storage = Storage(pathdir.joinpath(f"{Path(__file__).name}-oauth2.json"))
@@ -76,8 +82,9 @@ def get_authenticated_service(pathdir):
   if credentials is None or credentials.invalid:
     credentials = run_flow(flow, storage, pathdir.joinpath(f"{Path(__file__).name}-oauth2.json"))
 
-  return build(YOUTUBE_API_SERVICE_NAME, YOUTUBE_API_VERSION,
-    http=credentials.authorize(httplib2.Http()))
+  http=credentials.authorize(httplib2.Http())
+
+  return build(YOUTUBE_API_SERVICE_NAME, YOUTUBE_API_VERSION, http), build(ANALYTICS_API_SERVICE_NAME, ANALYTICS_API_VERSION, http)
 
 # creates of a new playlist
 def newplaylist(youtube, product):
@@ -124,7 +131,7 @@ def playlist(youtube, product):
   return id
 
 # the metadata of the video and the command to upload it
-def initialize_upload(youtube, row):
+def initialize_upload(youtube, row, plid):
   # YouTube's title caps out at 100 characters
   name = row['shortname'] if row['shortname'] is not None else row['fullname']
   prod = row['prodshort'] if row['prodshort'] is not None else row['product']
@@ -133,8 +140,19 @@ def initialize_upload(youtube, row):
   body=dict(
     snippet=dict(
       title=f'"{name}" screensaver from {prod} ({row['year']})',
-      description=(f"Screensaver Full Name: {row['fullname']}\n\nYear: {row['year']}\nCreator: {row['creator']}\nProduct: {row['product']}\nPublisher: {row['publisher']}\nSystems Made For: {row['os']}\nResolution Recorded At: {row['vidheight']}x{row['vidwidth']}\n\nFor daily screensavers, check out the Screensaver of the Day Bluesky account: bsky.app/profile/screensaverotd.bsky.social\nFor more information on the project, check out the FAQs: sotdfaq.neocities.org/"),
-      tags=['screensaver', 'retrocomputing', 'screensavermuseum'],
+      description=(
+        f"Full Name: {row['fullname']}\n\n"
+        f"Year: {row['year']}\n"
+        f"Creator: {row['creator']}\n"
+        f"Product: {row['product']}\n"
+        f"Publisher: {row['publisher']}\n"
+        f"Native OS: {row['os']}\n"
+        f"Original Resolution: {row['vidheight']}x{row['vidwidth']}\n\n"
+        f"More from this product: https://www.youtube.com/playlist?list={plid}\n\n"
+        f"For daily screensavers, check out the Screensaver of the Day Bluesky account: bsky.app/profile/screensaverotd.bsky.social\n"
+        f"For more information on the project, check out the FAQs: sotdfaq.neocities.org"
+      ),
+      tags=['screensaver', 'screensavers' 'retrocomputing', 'screensavermuseum'],
       categoryId="28" # Science and Technology
     ),
     status=dict(
@@ -148,24 +166,12 @@ def initialize_upload(youtube, row):
   insert_request = youtube.videos().insert(
     part=",".join(body.keys()),
     body=body,
-    # The chunksize parameter specifies the size of each chunk of data, in
-    # bytes, that will be uploaded at a time. Set a higher value for
-    # reliable connections as fewer chunks lead to faster uploads. Set a lower
-    # value for better recovery on less reliable connections.
-    #
-    # Setting "chunksize" equal to -1 in the code below means that the entire
-    # file will be uploaded in a single HTTP request. (If the upload fails,
-    # it will still be retried where it left off.) This is usually a best
-    # practice, but if you're using Python older than 2.6 or if you're
-    # running on App Engine, you should set the chunksize to something like
-    # 1024 * 1024 (1 megabyte).
     media_body=MediaFileUpload(Path.joinpath(Path(__file__).parent, "videos", f"{row['key']}.mp4"), chunksize=-1, resumable=True)
   )
 
   return resumable_upload(insert_request)
 
-# This method implements an exponential backoff strategy to resume a
-# failed upload.
+# This method implements an exponential backoff strategy to resume a failed upload.
 def resumable_upload(insert_request):
   response = None
   error = None
@@ -226,13 +232,43 @@ def vid2pl(youtube, plid, vidid):
 # function to be run by main
 def ytupload(row, pathdir):
   # authenticates youtube access
-  youtube = get_authenticated_service(pathdir)
+  youtube = get_authenticated_service(pathdir)[0]
 
   # gets id of playlist (and may create new playlist)
   plid = playlist(youtube, row['product'])
 
   # uploads the video and adds it to the proper playlist (try, except handled in main)
-  vidid = initialize_upload(youtube, row)
+  vidid = initialize_upload(youtube, row, plid)
   id = vid2pl(youtube, plid, vidid)
 
   return vidid # id of the uploaded video
+
+
+# FOR ANALYTICS  
+
+
+def execute_api_request(client_library_function, **kwargs):
+  response = client_library_function(
+    **kwargs
+  ).execute()
+
+  return response
+
+def ytanalytics(pathdir):
+  # Disable OAuthlib's HTTPs verification when running locally.
+  # *DO NOT* leave this option enabled when running in production.
+  os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
+
+  youtube = get_authenticated_service(pathdir)[1]
+
+  response = execute_api_request(
+      youtube.reports().query,
+      ids='channel==MINE',
+      startDate=datetime.now().date() - timedelta(days=8),
+      endDate=datetime.now().date(),
+      metrics='views,engagedViews,comments,likes,dislikes,shares,estimatedMinutesWatched,averageViewDuration,averageViewPercentage,subscribersGained,subscribersLost',
+      dimensions='day',
+      sort='day'
+  )
+
+  return response
