@@ -1,19 +1,23 @@
 import os
+import pandas as pd
 import sqlite3
 import sys
-import pandas as pd
-
-from datetime import datetime
-from pathlib import Path
 
 from atproto import Client, Request, client_utils, models
+from datetime import datetime
 from dotenv import load_dotenv
 from httpx import Timeout
+from pathlib import Path
 
-from bskyupload import *
-from ytupload import *
+from bluesky import *
+from emailrecap import sendEmail
+from youtube import *
+
 
 pathdir = Path(__file__).parent
+
+env_path = Path.joinpath(pathdir, '.env')
+load_dotenv(dotenv_path=env_path)
 
 date = datetime.today().strftime('%Y-%m-%d')
 
@@ -53,6 +57,7 @@ if output['ytid'] is None:
 else: # do not upload if an instance of the video has already been uploaded
     cur.execute("UPDATE scrnsvrotd SET used = 1, lastused = ?, timesused = ? WHERE key = ?", (date, output['timesused']+1, output['key']))
 
+# onyl runs analytics related tasks once a week (on Sundays)
 if datetime.today().weekday() == 6:
     notifs = bskynotifs(client)
     dms = bskydms(client)
@@ -61,7 +66,15 @@ if datetime.today().weekday() == 6:
     cur.execute(f"INSERT INTO bskystats VALUES {notifs}")
 
     ytstats = ytanalytics(pathdir)['rows']
-    cur.executemany("INSERT INTO ytstats VALUES(?,?,?,?,?,?,?,?,?,?,?,?);", ytstats)
+    cur.executemany("INSERT OR REPLACE INTO ytstats VALUES(?,?,?,?,?,?,?,?,?,?,?,?);", ytstats)
+
+    conn.commit()
+
+    ytquery = pd.read_sql_query(f"SELECT * FROM ytstats WHERE date > {lastweek}", conn)
+
+    bskyquery = pd.read_sql_query(f"SELECT * FROM bskystats ORDER BY weekendingon DESC LIMIT 2", conn)
+
+    sendEmail(ytquery, bskyquery, dms)
 
 conn.commit()
 conn.close()

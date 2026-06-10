@@ -1,11 +1,12 @@
+import google_auth_oauthlib.flow
+import google.oauth2.credentials
 import httplib2
 import os
 import random
 import sys
 import time
-import google.oauth2.credentials
-import google_auth_oauthlib.flow
 
+from datetime import datetime, timedelta
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 from googleapiclient.http import MediaFileUpload
@@ -13,7 +14,6 @@ from oauth2client.client import flow_from_clientsecrets
 from oauth2client.file import Storage
 from oauth2client.tools import argparser, run_flow
 from pathlib import Path
-from datetime import datetime, timedelta
 
 
 # Explicitly tell the underlying HTTP transport library not to retry, since
@@ -46,9 +46,6 @@ CLIENT_SECRETS_FILE = "client_secrets.json"
 YOUTUBE_UPLOAD_SCOPE = "https://www.googleapis.com/auth/youtube"
 YOUTUBE_API_SERVICE_NAME = "youtube"
 YOUTUBE_API_VERSION = "v3"
-YOUTUBE_ANALYTICS_SCOPE = "https://www.googleapis.com/auth/yt-analytics.readonly"
-ANALYTICS_API_SERVICE_NAME = "youtubeAnalytics"
-ANALYTICS_API_VERSION = "v2"
 
 # This variable defines a message to display if the CLIENT_SECRETS_FILE is
 # missing.
@@ -70,10 +67,10 @@ https://developers.google.com/api-client-library/python/guide/aaa_client_secrets
 
 VALID_PRIVACY_STATUSES = ("public", "private", "unlisted")
 
-# checks the generated json file which includes the name of this file
-def get_authenticated_service(pathdir):
+# checks the generated json file which includes the name of this file (for upload API)
+def get_authenticated_service_up(pathdir):
   flow = flow_from_clientsecrets(pathdir.joinpath(CLIENT_SECRETS_FILE),
-    scope=[YOUTUBE_UPLOAD_SCOPE, YOUTUBE_ANALYTICS_SCOPE],
+    scope=YOUTUBE_UPLOAD_SCOPE,
     message=MISSING_CLIENT_SECRETS_MESSAGE)
 
   storage = Storage(pathdir.joinpath(f"{Path(__file__).name}-oauth2.json"))
@@ -84,9 +81,9 @@ def get_authenticated_service(pathdir):
 
   http=credentials.authorize(httplib2.Http())
 
-  return build(YOUTUBE_API_SERVICE_NAME, YOUTUBE_API_VERSION, http), build(ANALYTICS_API_SERVICE_NAME, ANALYTICS_API_VERSION, http)
+  return build(YOUTUBE_API_SERVICE_NAME, YOUTUBE_API_VERSION, http)
 
-# creates of a new playlist
+# creates a new playlist
 def newplaylist(youtube, product):
   body=dict(
     snippet=dict(
@@ -232,7 +229,7 @@ def vid2pl(youtube, plid, vidid):
 # function to be run by main
 def ytupload(row, pathdir):
   # authenticates youtube access
-  youtube = get_authenticated_service(pathdir)[0]
+  youtube = get_authenticated_service_up(pathdir)
 
   # gets id of playlist (and may create new playlist)
   plid = playlist(youtube, row['product'])
@@ -246,6 +243,25 @@ def ytupload(row, pathdir):
 
 # FOR ANALYTICS  
 
+YOUTUBE_ANALYTICS_SCOPE = "https://www.googleapis.com/auth/yt-analytics.readonly"
+ANALYTICS_API_SERVICE_NAME = "youtubeAnalytics"
+ANALYTICS_API_VERSION = "v2"
+
+# checks the generated json file which includes the name of this file (for analytics API)
+def get_authenticated_service_up(pathdir):
+  flow = flow_from_clientsecrets(pathdir.joinpath(CLIENT_SECRETS_FILE),
+    scope=YOUTUBE_ANALYTICS_SCOPE,
+    message=MISSING_CLIENT_SECRETS_MESSAGE)
+
+  storage = Storage(pathdir.joinpath(f"{Path(__file__).name}-oauth2.json"))
+  credentials = storage.get()
+
+  if credentials is None or credentials.invalid:
+    credentials = run_flow(flow, storage, pathdir.joinpath(f"{Path(__file__).name}-oauth2.json"))
+
+  http=credentials.authorize(httplib2.Http())
+
+  return build(ANALYTICS_API_SERVICE_NAME, ANALYTICS_API_VERSION, http)
 
 def execute_api_request(client_library_function, **kwargs):
   response = client_library_function(
@@ -254,17 +270,16 @@ def execute_api_request(client_library_function, **kwargs):
 
   return response
 
+# analytics function to be called by main
 def ytanalytics(pathdir):
-  # Disable OAuthlib's HTTPs verification when running locally.
-  # *DO NOT* leave this option enabled when running in production.
-  os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
-
   youtube = get_authenticated_service(pathdir)[1]
 
+  # YouTube data is not available for a day until a day or two at least after that day
+  # YouTube data does not seem to "finalize" until after about a week, so it pulls further back than a week and overwrites old data
   response = execute_api_request(
       youtube.reports().query,
       ids='channel==MINE',
-      startDate=datetime.now().date() - timedelta(days=8),
+      startDate=datetime.now().date() - timedelta(days=10),
       endDate=datetime.now().date(),
       metrics='views,engagedViews,comments,likes,dislikes,shares,estimatedMinutesWatched,averageViewDuration,averageViewPercentage,subscribersGained,subscribersLost',
       dimensions='day',

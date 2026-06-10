@@ -2,15 +2,12 @@ import os
 import pandas as pd
 
 from atproto import Client, Request, client_utils, models, IdResolver
-from pathlib import Path
-from dotenv import load_dotenv
-from httpx import Timeout
 from datetime import datetime, timedelta
+from pathlib import Path
+from httpx import Timeout
 
+# connects to the bluesky backend
 def bskyconn(pathdir):
-    env_path = Path.joinpath(pathdir, '.env')
-    load_dotenv(dotenv_path=env_path)
-
     # bluesky account name and app ID from .env file in root directory of project
 
     user = os.getenv("ACCTNAME")
@@ -23,6 +20,7 @@ def bskyconn(pathdir):
 
     return client
 
+# uploads video to bluesky with appropriate metadata
 def bskyupload(row, date, pathdir, client):
     alttext = f"A video of the screensaver {row['fullname']} created by {row['creator']} in {row['year']} for {row['product']} on {row['os']}."
     posttext = (
@@ -51,6 +49,7 @@ def bskyupload(row, date, pathdir, client):
 
     client.send_video(text=text_builder, video=vid_data, video_alt=alttext, video_aspect_ratio=aspect_ratio, langs=['en-US'])
 
+# gets unread DMs on the bluesky account and auto-responds if necessary
 def bskydms(client):
     # create client proxied to Bluesky Chat service
     dm_client = client.with_bsky_chat_proxy()
@@ -63,15 +62,16 @@ def bskydms(client):
 
     convo_list = dm.list_convos({"read_state": "unread"}) # use limit and cursor to paginate
     for convo in convo_list.convos:
-        replyCheck = True
+        replyCheck = True # if the account has responded to the sender (is it a new conversation or not)
         if convo.status != 'accepted':
             dm.accept_convo({"convo_id": convo.id})
         discussion = dm.get_messages({"convo_id": convo.id})
         format = '%Y-%m-%dT%H:%M:%S.%fZ'
         for message in discussion.messages:
-            sender = id_resolver.did.resolve(message.sender.did).also_known_as[0][5:]
+            sender = id_resolver.did.resolve(message.sender.did).also_known_as[0][5:] # gets the username of the sender
             if sender == os.getenv("ACCTNAME"):
                 replyCheck = False
+            # currently the API does not support differentiating between unread and read messages (only unread and read conversations), this only gets messages sent within the previous week
             if (datetime.utcnow() - datetime.strptime(message.sent_at, format)) < timedelta(weeks=1) and sender != os.getenv("ACCTNAME"):
                 msgList.loc[len(msgList)] = [sender, message.text, message.sent_at, False]
         if replyCheck:
@@ -91,11 +91,15 @@ def bskydms(client):
             newuser = msgList[msgList['sender'] == sender].index[0]
             msgList.loc[msgList.index.get_loc(newuser), 'newConvo'] = True
 
+    dm.update_all_read() # sets all conversations looked at to read so they do not reappear next time unless new messages are included
+
     return msgList
 
+# gets all active notifications on the bluesky account since the last check-in
 def bskynotifs(client):
     response = client.app.bsky.notification.list_notifications()
 
+    # notification types we want to track
     knownValues = [
             "like",
             "repost",
@@ -122,6 +126,6 @@ def bskynotifs(client):
 
     counts.insert(0, datetime.today().strftime('%Y-%m-%d'))
 
-    client.app.bsky.notification.update_seen({'seen_at': client.get_current_time_iso()})
+    client.app.bsky.notification.update_seen({'seen_at': client.get_current_time_iso()}) # ensures notifications are marked as read
 
     return counts
