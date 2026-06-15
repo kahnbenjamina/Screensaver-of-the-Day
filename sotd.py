@@ -75,7 +75,8 @@ try:
 
         bskyquery = pd.read_sql_query(f"SELECT * FROM bskystats ORDER BY weekendingon DESC LIMIT 2", conn)
 
-        sendEmail(ytquery, bskyquery, dms)
+        if not ytquery.empty and not bskyquery.empty:
+            sendEmail(ytquery, bskyquery, dms)
 except:
     pass
 
