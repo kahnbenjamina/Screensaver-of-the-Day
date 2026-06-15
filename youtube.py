@@ -229,14 +229,14 @@ def vid2pl(youtube, plid, vidid):
 # function to be run by main
 def ytupload(row, pathdir):
   # authenticates youtube access
-  youtube = get_authenticated_service_up(pathdir)
+  youtube_u = get_authenticated_service_up(pathdir)
 
   # gets id of playlist (and may create new playlist)
-  plid = playlist(youtube, row['product'])
+  plid = playlist(youtube_u, row['product'])
 
   # uploads the video and adds it to the proper playlist (try, except handled in main)
-  vidid = initialize_upload(youtube, row, plid)
-  id = vid2pl(youtube, plid, vidid)
+  vidid = initialize_upload(youtube_u, row, plid)
+  id = vid2pl(youtube_u, plid, vidid)
 
   return vidid # id of the uploaded video
 
@@ -248,7 +248,7 @@ ANALYTICS_API_SERVICE_NAME = "youtubeAnalytics"
 ANALYTICS_API_VERSION = "v2"
 
 # checks the generated json file which includes the name of this file (for analytics API)
-def get_authenticated_service_up(pathdir):
+def get_authenticated_service_data(pathdir):
   flow = flow_from_clientsecrets(pathdir.joinpath(CLIENT_SECRETS_FILE),
     scope=YOUTUBE_ANALYTICS_SCOPE,
     message=MISSING_CLIENT_SECRETS_MESSAGE)
@@ -272,12 +272,12 @@ def execute_api_request(client_library_function, **kwargs):
 
 # analytics function to be called by main
 def ytanalytics(pathdir):
-  youtube = get_authenticated_service(pathdir)[1]
+  youtube_d = get_authenticated_service_data
 
   # YouTube data is not available for a day until a day or two at least after that day
   # YouTube data does not seem to "finalize" until after about a week, so it pulls further back than a week and overwrites old data
   response = execute_api_request(
-      youtube.reports().query,
+      youtube_d.reports().query,
       ids='channel==MINE',
       startDate=datetime.now().date() - timedelta(days=10),
       endDate=datetime.now().date(),
