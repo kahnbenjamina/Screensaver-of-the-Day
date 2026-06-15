@@ -57,24 +57,27 @@ if output['ytid'] is None:
 else: # do not upload if an instance of the video has already been uploaded
     cur.execute("UPDATE scrnsvrotd SET used = 1, lastused = ?, timesused = ? WHERE key = ?", (date, output['timesused']+1, output['key']))
 
-# onyl runs analytics related tasks once a week (on Sundays)
-if datetime.today().weekday() == 6:
-    notifs = bskynotifs(client)
-    dms = bskydms(client)
-    notifs.extend([len(dms), len(pd.unique(dms['sender'])), len(dms[dms['newConvo'] == True])])
-    notifs = str(notifs).replace('[', '(').replace(']', ')')
-    cur.execute(f"INSERT INTO bskystats VALUES {notifs}")
+try:
+    # only runs analytics related tasks once a week (on Sundays)
+    if datetime.today().weekday() == 6:
+        notifs = bskynotifs(client)
+        dms = bskydms(client)
+        notifs.extend([len(dms), len(pd.unique(dms['sender'])), len(dms[dms['newConvo'] == True])])
+        notifs = str(notifs).replace('[', '(').replace(']', ')')
+        cur.execute(f"INSERT INTO bskystats VALUES {notifs}")
 
-    ytstats = ytanalytics(pathdir)['rows']
-    cur.executemany("INSERT OR REPLACE INTO ytstats VALUES(?,?,?,?,?,?,?,?,?,?,?,?);", ytstats)
+        ytstats = ytanalytics(pathdir)['rows']
+        cur.executemany("INSERT OR REPLACE INTO ytstats VALUES(?,?,?,?,?,?,?,?,?,?,?,?);", ytstats)
 
-    conn.commit()
+        conn.commit()
 
-    ytquery = pd.read_sql_query(f"SELECT * FROM ytstats WHERE date > {lastweek}", conn)
+        ytquery = pd.read_sql_query(f"SELECT * FROM ytstats WHERE date > {lastweek}", conn)
 
-    bskyquery = pd.read_sql_query(f"SELECT * FROM bskystats ORDER BY weekendingon DESC LIMIT 2", conn)
+        bskyquery = pd.read_sql_query(f"SELECT * FROM bskystats ORDER BY weekendingon DESC LIMIT 2", conn)
 
-    sendEmail(ytquery, bskyquery, dms)
+        sendEmail(ytquery, bskyquery, dms)
+except:
+    pass
 
 conn.commit()
 conn.close()
