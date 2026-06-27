@@ -52,33 +52,36 @@ if output['ytid'] is None:
         id = ytupload(output, pathdir)
         cur.execute("UPDATE scrnsvrotd SET used = 1, lastused = ?, timesused = ?, ytid = ? WHERE key = ?", (date, output['timesused']+1, id, output['key']))
     except Exception as e: # if the video can't be uploaded, don't break the database
-        print(e)
+        print(f"YouTube video upload failed due to: {e}")
         cur.execute("UPDATE scrnsvrotd SET used = 1, lastused = ?, timesused = ? WHERE key = ?", (date, output['timesused']+1, output['key']))
 else: # do not upload if an instance of the video has already been uploaded
     cur.execute("UPDATE scrnsvrotd SET used = 1, lastused = ?, timesused = ? WHERE key = ?", (date, output['timesused']+1, output['key']))
 
-try:
-    # only runs analytics related tasks once a week (on Sundays)
-    if datetime.today().weekday() == 6:
+# only runs analytics related tasks once a week (on Sundays)
+if datetime.today().weekday() == 6:
+    try:
         notifs = bskynotifs(client)
         dms = bskydms(client)
         notifs.extend([len(dms), len(pd.unique(dms['sender'])), len(dms[dms['newConvo'] == True])])
         notifs = str(notifs).replace('[', '(').replace(']', ')')
         cur.execute(f"INSERT INTO bskystats VALUES {notifs}")
+    except Exception as e:
+        print(f"Bluesky data pull failed due to {e}")
 
+    try:
         ytstats = ytanalytics(pathdir)['rows']
         cur.executemany("INSERT OR REPLACE INTO ytstats VALUES(?,?,?,?,?,?,?,?,?,?,?,?);", ytstats)
+    except Exception as e:
+        print(f"YouTube data pull failed due to {e}")
 
-        conn.commit()
+    conn.commit() # commits newly pulled data so the new data can be queried
 
-        ytquery = pd.read_sql_query(f"SELECT * FROM ytstats WHERE date > {lastweek}", conn)
+    # attempts to receive last two weeks for both datasets
+    ytquery = pd.read_sql_query(f"SELECT * FROM ytstats WHERE date > {str(datetime.now().date()-timedelta(days=14))}", conn)
+    bskyquery = pd.read_sql_query(f"SELECT * FROM bskystats ORDER BY weekendingon DESC LIMIT 2", conn)
 
-        bskyquery = pd.read_sql_query(f"SELECT * FROM bskystats ORDER BY weekendingon DESC LIMIT 2", conn)
-
-        if not ytquery.empty and not bskyquery.empty:
-            sendEmail(ytquery, bskyquery, dms)
-except:
-    pass
+    if not ytquery.empty and not bskyquery.empty:
+        sendEmail(ytquery, bskyquery, dms)
 
 conn.commit()
 conn.close()

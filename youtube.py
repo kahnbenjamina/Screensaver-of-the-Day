@@ -274,7 +274,7 @@ def execute_api_request(client_library_function, **kwargs):
 def ytanalytics(pathdir):
   youtube_d = get_authenticated_service_data(pathdir)
 
-  # YouTube data is not available for a day until a day or two at least after that day
+  # YouTube data is not available for a day until a day or two at least after the day of the pull
   # YouTube data does not seem to "finalize" until after about a week, so it pulls further back than a week and overwrites old data
   response = execute_api_request(
       youtube_d.reports().query,
