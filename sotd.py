@@ -78,7 +78,7 @@ if datetime.today().weekday() == 6:
 
     # attempts to receive last two weeks for both datasets
     ytquery = pd.read_sql_query(f"SELECT * FROM ytstats WHERE date > {str(datetime.now().date()-timedelta(days=14))}", conn)
-    bskyquery = pd.read_sql_query(f"SELECT * FROM bskystats ORDER BY weekendingon DESC LIMIT 2", conn)
+    bskyquery = pd.read_sql_query(f"SELECT * FROM bskystats ORDER BY week-ending-on DESC LIMIT 2", conn) # picks the most recent two weeks regardless of when the last pull was
 
     if not ytquery.empty and not bskyquery.empty:
         sendEmail(ytquery, bskyquery, dms)
