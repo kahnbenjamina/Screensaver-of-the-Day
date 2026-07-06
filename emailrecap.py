@@ -93,11 +93,11 @@ def sendEmail(ytquery, bskyquery, dms):
             f'<P>&emsp;<B>Replies</B>: {curbsky['replies']}</P>\n'
             f'<P>&emsp;<B>Quotes</B>: {curbsky['quotes']}</P>\n'
             f'<P>&emsp;<B>Starter Packs</B>: {curbsky['starterpacks']}</P>\n'
-            f'<P>&emsp;<B>Likes via Reposts</B>: {curbsky['likes-via-repost']}</P>\n'
-            f'<P>&emsp;<B>Reposts via Reposts</B>: {curbsky['reposts-via-repost']}</P>\n'
-            f'<P>&emsp;<B>Total DMs</B>: {curbsky['total-messages']}</P>\n'
-            f'<P>&emsp;<B>Users DMing</B>: {curbsky['users-messaging']}</P>\n'
-            f'<P>&emsp;<B>New Users DMing</B>: {curbsky['newusers-messaging']}</P>\n'
+            f'<P>&emsp;<B>Likes via Reposts</B>: {curbsky['likesViaRepost']}</P>\n'
+            f'<P>&emsp;<B>Reposts via Reposts</B>: {curbsky['repostsViaRepost']}</P>\n'
+            f'<P>&emsp;<B>Total DMs</B>: {curbsky['totalMessages']}</P>\n'
+            f'<P>&emsp;<B>Users DMing</B>: {curbsky['usersMessaging']}</P>\n'
+            f'<P>&emsp;<B>New Users DMing</B>: {curbsky['newUsersMessaging']}</P>\n'
         )
     else:
         bskyString = (
@@ -108,11 +108,11 @@ def sendEmail(ytquery, bskyquery, dms):
             f'<P>&emsp;<B>Replies</B>: {curbsky['replies']} ({getCharPos(curbsky['replies'], prevbsky['replies'])})</P>\n'
             f'<P>&emsp;<B>Quotes</B>: {curbsky['quotes']} ({getCharPos(curbsky['quotes'], prevbsky['quotes'])})</P>\n'
             f'<P>&emsp;<B>Starter Packs</B>: {curbsky['starterpacks']} ({getCharPos(curbsky['starterpacks'], prevbsky['starterpacks'])})</P>\n'
-            f'<P>&emsp;<B>Likes via Reposts</B>: {curbsky['likes-via-repost']} ({getCharPos(curbsky['likes-via-repost'], prevbsky['likes-via-repost'])})</P>\n'
-            f'<P>&emsp;<B>Reposts via Reposts</B>: {curbsky['reposts-via-repost']} ({getCharPos(curbsky['reposts-via-repost'], prevbsky['reposts-via-repost'])})</P>\n'
-            f'<P>&emsp;<B>Total DMs</B>: {curbsky['total-messages']} ({getCharPos(curbsky['total-messages'], prevbsky['total-messages'])})</P>\n'
-            f'<P>&emsp;<B>Users DMing</B>: {curbsky['users-messaging']} ({getCharPos(curbsky['users-messaging'], prevbsky['users-messaging'])})</P>\n'
-            f'<P>&emsp;<B>New Users DMing</B>: {curbsky['newusers-messaging']} ({getCharPos(curbsky['newusers-messaging'], prevbsky['newusers-messaging'])})</P>\n'
+            f'<P>&emsp;<B>Likes via Reposts</B>: {curbsky['likes-via-repost']} ({getCharPos(curbsky['likesViaRepost'], prevbsky['likesViaRepost'])})</P>\n'
+            f'<P>&emsp;<B>Reposts via Reposts</B>: {curbsky['reposts-via-repost']} ({getCharPos(curbsky['repostsViaRepost'], prevbsky['repostsViaRepost'])})</P>\n'
+            f'<P>&emsp;<B>Total DMs</B>: {curbsky['total-messages']} ({getCharPos(curbsky['totalMessages'], prevbsky['totalMessages'])})</P>\n'
+            f'<P>&emsp;<B>Users DMing</B>: {curbsky['users-messaging']} ({getCharPos(curbsky['usersMessaging'], prevbsky['usersMessaging'])})</P>\n'
+            f'<P>&emsp;<B>New Users DMing</B>: {curbsky['newusers-messaging']} ({getCharPos(curbsky['newusersMessaging'], prevbsky['newusersMessaging'])})</P>\n'
         )
 
     dmString = f''
