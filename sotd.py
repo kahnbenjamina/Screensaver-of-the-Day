@@ -71,6 +71,9 @@ if datetime.today().weekday() == 6:
     try:
         ytstats = ytanalytics(pathdir)['rows']
         cur.executemany("INSERT OR REPLACE INTO ytstats VALUES(?,?,?,?,?,?,?,?,?,?,?,?);", ytstats)
+        # the above statement has a bug where it still inputs duplicate rows depsite "REPLACE," so the below statement removes duplicate entries
+        # TO DO: figure out how to handle this more elegantly in one statement
+        cur.execute("DELETE FROM ytstats WHERE rowid NOT IN (SELECT MIN(rowid) FROM ytstats GROUP BY date)")
     except Exception as e:
         print(f"YouTube data pull failed due to {e}")
 

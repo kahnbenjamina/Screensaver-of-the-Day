@@ -59,8 +59,8 @@ def sendEmail(ytquery, bskyquery, dms):
             f'<P>&emsp;<B>Daily Minutes Watched</B>: {round(curYT['estMinsWatched'].mean(), 2)}</P>\n'
             f'<P>&emsp;<B>Average View Duration (secs)</B>: {round(curYT['avgViewDuration'].mean())}</P>\n'
             f'<P>&emsp;<B>Average View Percent</B>: {round(curYT['avgViewPercent'].mean(), 2)}%</P>\n'
-            f'<P>&emsp;<B>Subscribers Gained</B>: {curYT['subscribersGained'].sum()}</P>\n'
-            f'<P>&emsp;<B>Subscribers Lost</B>: {curYT['subscribersLost'].sum()}</P>\n'
+            f'<P>&emsp;<B>Subscribers Gained</B>: {curYT['subsGained'].sum()}</P>\n'
+            f'<P>&emsp;<B>Subscribers Lost</B>: {curYT['subsLost'].sum()}</P>\n'
         )
     else:
         ytString = (
@@ -73,8 +73,8 @@ def sendEmail(ytquery, bskyquery, dms):
             f'<P>&emsp;<B>Daily Minutes Watched</B>: {round(curYT['estMinsWatched'].mean(), 2)} ({getCharPos(round(curYT['estMinsWatched'].mean(), 2), round(prevYT['estMinsWatched'].mean(), 2))})</P>\n'
             f'<P>&emsp;<B>Average View Duration (secs)</B>: {round(curYT['avgViewDuration'].mean())} ({getCharPos(round(curYT['avgViewDuration'].mean()), round(prevYT['avgViewDuration'].mean()))})</P>\n'
             f'<P>&emsp;<B>Average View Percent</B>: {round(curYT['avgViewPercent'].mean(), 2)}% ({getCharPos(round(curYT['avgViewPercent'].mean(), 2), round(prevYT['avgViewPercent'].mean(), 2))}%)</P>\n'
-            f'<P>&emsp;<B>Subscribers Gained</B>: {curYT['subscribersGained'].sum()} ({getCharPos(curYT['subscribersGained'].sum(), prevYT['subscribersGained'].sum())})</P>\n'
-            f'<P>&emsp;<B>Subscribers Lost</B>: {curYT['subscribersLost'].sum()} ({getCharNeg(curYT['subscribersLost'].sum(), prevYT['subscribersLost'].sum())})</P>\n'
+            f'<P>&emsp;<B>Subscribers Gained</B>: {curYT['subsGained'].sum()} ({getCharPos(curYT['subsGained'].sum(), prevYT['subsGained'].sum())})</P>\n'
+            f'<P>&emsp;<B>Subscribers Lost</B>: {curYT['subsLost'].sum()} ({getCharNeg(curYT['subsLost'].sum(), prevYT['subsLost'].sum())})</P>\n'
         )
 
     curbsky = bskyquery.iloc[0]
@@ -108,11 +108,11 @@ def sendEmail(ytquery, bskyquery, dms):
             f'<P>&emsp;<B>Replies</B>: {curbsky['replies']} ({getCharPos(curbsky['replies'], prevbsky['replies'])})</P>\n'
             f'<P>&emsp;<B>Quotes</B>: {curbsky['quotes']} ({getCharPos(curbsky['quotes'], prevbsky['quotes'])})</P>\n'
             f'<P>&emsp;<B>Starter Packs</B>: {curbsky['starterpacks']} ({getCharPos(curbsky['starterpacks'], prevbsky['starterpacks'])})</P>\n'
-            f'<P>&emsp;<B>Likes via Reposts</B>: {curbsky['likes-via-repost']} ({getCharPos(curbsky['likesViaRepost'], prevbsky['likesViaRepost'])})</P>\n'
-            f'<P>&emsp;<B>Reposts via Reposts</B>: {curbsky['reposts-via-repost']} ({getCharPos(curbsky['repostsViaRepost'], prevbsky['repostsViaRepost'])})</P>\n'
-            f'<P>&emsp;<B>Total DMs</B>: {curbsky['total-messages']} ({getCharPos(curbsky['totalMessages'], prevbsky['totalMessages'])})</P>\n'
-            f'<P>&emsp;<B>Users DMing</B>: {curbsky['users-messaging']} ({getCharPos(curbsky['usersMessaging'], prevbsky['usersMessaging'])})</P>\n'
-            f'<P>&emsp;<B>New Users DMing</B>: {curbsky['newusers-messaging']} ({getCharPos(curbsky['newusersMessaging'], prevbsky['newusersMessaging'])})</P>\n'
+            f'<P>&emsp;<B>Likes via Reposts</B>: {curbsky['likesViaRepost']} ({getCharPos(curbsky['likesViaRepost'], prevbsky['likesViaRepost'])})</P>\n'
+            f'<P>&emsp;<B>Reposts via Reposts</B>: {curbsky['repostsViaRepost']} ({getCharPos(curbsky['repostsViaRepost'], prevbsky['repostsViaRepost'])})</P>\n'
+            f'<P>&emsp;<B>Total DMs</B>: {curbsky['totalMessages']} ({getCharPos(curbsky['totalMessages'], prevbsky['totalMessages'])})</P>\n'
+            f'<P>&emsp;<B>Users DMing</B>: {curbsky['usersMessaging']} ({getCharPos(curbsky['usersMessaging'], prevbsky['usersMessaging'])})</P>\n'
+            f'<P>&emsp;<B>New Users DMing</B>: {curbsky['newUsersMessaging']} ({getCharPos(curbsky['newusersMessaging'], prevbsky['newusersMessaging'])})</P>\n'
         )
 
     dmString = f''
