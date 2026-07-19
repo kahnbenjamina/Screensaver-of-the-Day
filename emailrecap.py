@@ -112,7 +112,7 @@ def sendEmail(ytquery, bskyquery, dms):
             f'<P>&emsp;<B>Reposts via Reposts</B>: {curbsky['repostsViaRepost']} ({getCharPos(curbsky['repostsViaRepost'], prevbsky['repostsViaRepost'])})</P>\n'
             f'<P>&emsp;<B>Total DMs</B>: {curbsky['totalMessages']} ({getCharPos(curbsky['totalMessages'], prevbsky['totalMessages'])})</P>\n'
             f'<P>&emsp;<B>Users DMing</B>: {curbsky['usersMessaging']} ({getCharPos(curbsky['usersMessaging'], prevbsky['usersMessaging'])})</P>\n'
-            f'<P>&emsp;<B>New Users DMing</B>: {curbsky['newUsersMessaging']} ({getCharPos(curbsky['newusersMessaging'], prevbsky['newusersMessaging'])})</P>\n'
+            f'<P>&emsp;<B>New Users DMing</B>: {curbsky['newUsersMessaging']} ({getCharPos(curbsky['newUsersMessaging'], prevbsky['newUsersMessaging'])})</P>\n'
         )
 
     dmString = f''
