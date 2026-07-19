@@ -44,6 +44,8 @@ def sendEmail(ytquery, bskyquery, dms):
     curYT = ytquery[ytquery['date'] > str(datetime.now().date()-timedelta(days=8))]
     prevYT = ytquery[ytquery['date'] <= str(datetime.now().date()-timedelta(days=8))]
 
+    dateform = '%Y-%m-%d'
+
     # YouTube stats section (could try to make this a function, but the different roundings, mean vs sum, pos vs neg make it difficult)
     if curYT.empty:
         ytString = "YouTube analytics could not be collected this week."
@@ -61,6 +63,7 @@ def sendEmail(ytquery, bskyquery, dms):
             f'<P>&emsp;<B>Average View Percent</B>: {round(curYT['avgViewPercent'].mean(), 2)}%</P>\n'
             f'<P>&emsp;<B>Subscribers Gained</B>: {curYT['subsGained'].sum()}</P>\n'
             f'<P>&emsp;<B>Subscribers Lost</B>: {curYT['subsLost'].sum()}</P>\n'
+            f'<P>&emsp;<SPAN style="font-size:10px"><I>Date from {datetime.strptime(curYT['date'].min(), dateform).strftime('%m/%d')}-{datetime.strptime(curYT['date'].max(), dateform).strftime('%m/%d')}</I></SPAN></P>\n'
         )
     else:
         ytString = (
@@ -75,6 +78,7 @@ def sendEmail(ytquery, bskyquery, dms):
             f'<P>&emsp;<B>Average View Percent</B>: {round(curYT['avgViewPercent'].mean(), 2)}% ({getCharPos(round(curYT['avgViewPercent'].mean(), 2), round(prevYT['avgViewPercent'].mean(), 2))}%)</P>\n'
             f'<P>&emsp;<B>Subscribers Gained</B>: {curYT['subsGained'].sum()} ({getCharPos(curYT['subsGained'].sum(), prevYT['subsGained'].sum())})</P>\n'
             f'<P>&emsp;<B>Subscribers Lost</B>: {curYT['subsLost'].sum()} ({getCharNeg(curYT['subsLost'].sum(), prevYT['subsLost'].sum())})</P>\n'
+            f'<P>&emsp;<SPAN style="font-size:10px"><I>Data from {datetime.strptime(curYT['date'].min(), dateform).strftime('%m/%d')}-{datetime.strptime(curYT['date'].max(), dateform).strftime('%m/%d')} ({datetime.strptime(prevYT['date'].min(), dateform).strftime('%m/%d')}-{datetime.strptime(prevYT['date'].max(), dateform).strftime('%m/%d')})</I></SPAN></P>\n'
         )
 
     curbsky = bskyquery.iloc[0]
