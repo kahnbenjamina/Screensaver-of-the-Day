@@ -80,7 +80,7 @@ if datetime.today().weekday() == 6:
     conn.commit() # commits newly pulled data so the new data can be queried
 
     # attempts to receive last two weeks for both datasets
-    ytquery = pd.read_sql_query(f"SELECT * FROM ytstats WHERE date > '{str(datetime.now().date()-timedelta(days=14))}'", conn)
+    ytquery = pd.read_sql_query(f"SELECT * FROM ytstats ORDER BY date DESC LIMIT 14", conn) # picks the most recent two weeks of results
     bskyquery = pd.read_sql_query(f"SELECT * FROM bskystats ORDER BY weekEndingOn DESC LIMIT 2", conn) # picks the most recent two weeks regardless of when the last pull was
 
     if not ytquery.empty and not bskyquery.empty:
