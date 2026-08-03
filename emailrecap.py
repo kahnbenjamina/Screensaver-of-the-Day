@@ -41,8 +41,9 @@ def sendEmail(ytquery, bskyquery, dms):
     message['Subject'] = f'Screensaver of the Day Weekly Recap for the Week ending on {datetime.now().date()}'
 
     # YouTube data is not available for a day until a day or two at least after the pull (hence going eight days before)
-    curYT = ytquery[ytquery['date'] > str(datetime.now().date()-timedelta(days=8))]
-    prevYT = ytquery[ytquery['date'] <= str(datetime.now().date()-timedelta(days=8))]
+
+    curYT = ytquery.iloc[:7,:]
+    prevYT = ytquery.iloc[7:,:]
 
     dateform = '%Y-%m-%d'
 
