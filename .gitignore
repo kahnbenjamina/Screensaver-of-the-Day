@@ -8,6 +8,7 @@ sotd.timer
 *.xlsx
 *.json
 rerecord.txt
+holidays.*
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

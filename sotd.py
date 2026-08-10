@@ -32,17 +32,22 @@ conn = sqlite3.connect(Path.joinpath(pathdir, 'ScreensaverOTD.db'))
 conn.row_factory = sqlite3.Row
 cur = conn.cursor()
 
-# only selects screensavers with videos (active) and that haven't been used since the last reset (used)
-fullQuery = "SELECT * FROM scrnsvrotd WHERE active=1 AND used=0 ORDER BY RANDOM()"
-
-query = cur.execute(fullQuery)
+# attemps to select new (not uploaded to youtube yet) screensavers first
+newQuery = "SELECT * FROM scrnsvrotd WHERE active=1 AND used=0 AND ytid IS NULL ORDER BY RANDOM()" 
+query = cur.execute(newQuery)
 
 try:
     output = query.fetchone()
-except TypeError as e: # if there are no unused active screensavers, resets all active to unused
-    cur.execute("UPDATE scrnsvrotd SET used = 0 WHERE used = 1")
+except TypeError as e: # if there are no new active screensavers
+    # only selects screensavers with videos (active) and that haven't been used since the last reset (used)
+    fullQuery = "SELECT * FROM scrnsvrotd WHERE active=1 AND used=0 ORDER BY RANDOM()"
     query = cur.execute(fullQuery)
-    output = query.fetchone()
+    try:
+        output = query.fetchone()
+    except TypeError as e: # if there are no unused active screensavers, resets all active to unused
+        cur.execute("UPDATE scrnsvrotd SET used = 0 WHERE used = 1")
+        query = cur.execute(fullQuery)
+        output = query.fetchone()
 
 bskyupload(output, date, pathdir, client)
 
@@ -50,12 +55,12 @@ bskyupload(output, date, pathdir, client)
 if output['ytid'] is None:
     try: # saves the id of the video to the database
         id = ytupload(output, pathdir)
-        cur.execute("UPDATE scrnsvrotd SET used = 1, lastused = ?, timesused = ?, ytid = ? WHERE key = ?", (date, output['timesused']+1, id, output['key']))
+        cur.execute(f"UPDATE scrnsvrotd SET used = 1, lastused = {date}, timesused = {output['timesused']+1}, ytid = {id} WHERE key = {output['key']}")
     except Exception as e: # if the video can't be uploaded, don't break the database
         print(f"YouTube video upload failed due to: {e}")
-        cur.execute("UPDATE scrnsvrotd SET used = 1, lastused = ?, timesused = ? WHERE key = ?", (date, output['timesused']+1, output['key']))
+        cur.execute(f"UPDATE scrnsvrotd SET used = 1, lastused = {date}, timesused = {output['timesused']+1} WHERE key = {output['key']}")
 else: # do not upload if an instance of the video has already been uploaded
-    cur.execute("UPDATE scrnsvrotd SET used = 1, lastused = ?, timesused = ? WHERE key = ?", (date, output['timesused']+1, output['key']))
+    cur.execute(f"UPDATE scrnsvrotd SET used = 1, lastused = {date}, timesused = {output['timesused']+1} WHERE key = {output['key']}")
 
 # only runs analytics related tasks once a week (on Sundays)
 if datetime.today().weekday() == 6:

@@ -7,25 +7,25 @@ from email.mime.text import MIMEText
 
 # returns symbols assuming current value should be higher than previous value
 def getCharPos(curVal, prevVal):
-    symbol = f''
+    symbol = ''
     if curVal > prevVal:
         symbol = f'<SPAN style="color:green">&#8593;</SPAN> {round(curVal-prevVal, 2)}'
     elif curVal < prevVal:
         symbol = f'<SPAN style="color:red">&#8595;</SPAN> {abs(round(curVal-prevVal, 2))}'
     else:
-        symbol = f'<SPAN style="color:gray">&#8596;</SPAN>'
+        symbol = '<SPAN style="color:gray">&#8596;</SPAN>'
 
     return symbol
 
 # returns symbols assuming current value should be lower than previous value
 def getCharNeg(curVal, prevVal):
-    symbol = f''
+    symbol = ''
     if curVal > prevVal:
         symbol = f'<SPAN style="color:red">&#8593;</SPAN> {round(curVal-prevVal, 2)}' 
     elif curVal < prevVal:
         symbol = f'<SPAN style="color:green">&#8595;</SPAN> {abs(round(curVal-prevVal, 2))}'
     else:
-        symbol = f'<SPAN style="color:gray">&#8596;</SPAN>'
+        symbol = '<SPAN style="color:gray">&#8596;</SPAN>'
     
     return symbol
 
@@ -120,10 +120,10 @@ def sendEmail(ytquery, bskyquery, dms):
             f'<P>&emsp;<B>New Users DMing</B>: {curbsky['newUsersMessaging']} ({getCharPos(curbsky['newUsersMessaging'], prevbsky['newUsersMessaging'])})</P>\n'
         )
 
-    dmString = f''
+    dmString = ''
 
     if dms.empty:
-        dmString = f"<H3>&emsp; No DMs this week!</H3>"
+        dmString = "<H3>&emsp; No DMs this week!</H3>"
     else:
         for DMer in dms['sender'].unique():
             subDM = dms[dms['sender'] == DMer].sort_values(by = ['timesent'], ascending = True)
