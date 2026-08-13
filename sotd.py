@@ -55,12 +55,12 @@ bskyupload(output, date, pathdir, client)
 if output['ytid'] is None:
     try: # saves the id of the video to the database
         id = ytupload(output, pathdir)
-        cur.execute(f"UPDATE scrnsvrotd SET used = 1, lastused = {date}, timesused = {output['timesused']+1}, ytid = {id} WHERE key = {output['key']}")
+        cur.execute(f"UPDATE scrnsvrotd SET used = 1, lastused = '{date}', timesused = {output['timesused']+1}, ytid = '{id}' WHERE key = '{output['key']}'")
     except Exception as e: # if the video can't be uploaded, don't break the database
         print(f"YouTube video upload failed due to: {e}")
-        cur.execute(f"UPDATE scrnsvrotd SET used = 1, lastused = {date}, timesused = {output['timesused']+1} WHERE key = {output['key']}")
+        cur.execute(f"UPDATE scrnsvrotd SET used = 1, lastused = '{date}', timesused = {output['timesused']+1} WHERE key = '{output['key']}'")
 else: # do not upload if an instance of the video has already been uploaded
-    cur.execute(f"UPDATE scrnsvrotd SET used = 1, lastused = {date}, timesused = {output['timesused']+1} WHERE key = {output['key']}")
+    cur.execute(f"UPDATE scrnsvrotd SET used = 1, lastused = '{date}', timesused = {output['timesused']+1} WHERE key = '{output['key']}'")
 
 # only runs analytics related tasks once a week (on Sundays)
 if datetime.today().weekday() == 6:
