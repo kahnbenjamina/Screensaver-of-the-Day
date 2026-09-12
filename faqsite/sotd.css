@@ -32,3 +32,10 @@ a:visited    { color: #7022B5; }
 .answer      { background: #969696;
                padding: 6px;
                border: 1px solid #e0e0e0; }
+
+.return      { font-size: 0.9rem; }
+
+.quote       { font-size: 0.95rem;
+               color: #d3d3d3; 
+               padding-top: 10px;
+               padding-bottom: 10px; }

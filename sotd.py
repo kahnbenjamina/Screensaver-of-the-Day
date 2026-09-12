@@ -32,22 +32,23 @@ conn = sqlite3.connect(Path.joinpath(pathdir, 'ScreensaverOTD.db'))
 conn.row_factory = sqlite3.Row
 cur = conn.cursor()
 
-# attemps to select new (not uploaded to youtube yet) screensavers first
-newQuery = "SELECT * FROM scrnsvrotd WHERE active=1 AND used=0 AND ytid IS NULL ORDER BY RANDOM()" 
-query = cur.execute(newQuery)
+newQuery = "SELECT * FROM scrnsvrotd WHERE active=1 AND used=0 AND ytid IS NULL ORDER BY RANDOM()"
+fullQuery = "SELECT * FROM scrnsvrotd WHERE active=1 AND used=0 ORDER BY RANDOM()"
 
-try:
-    output = query.fetchone()
-except TypeError as e: # if there are no new active screensavers
-    # only selects screensavers with videos (active) and that haven't been used since the last reset (used)
-    fullQuery = "SELECT * FROM scrnsvrotd WHERE active=1 AND used=0 ORDER BY RANDOM()"
+# attemps to select new (not uploaded to youtube yet) screensavers first
+query = cur.execute(newQuery)
+output = query.fetchone()
+
+# attemps to select a previously uploaded, but unused in this cycle screensaver
+if output is None:
     query = cur.execute(fullQuery)
-    try:
-        output = query.fetchone()
-    except TypeError as e: # if there are no unused active screensavers, resets all active to unused
-        cur.execute("UPDATE scrnsvrotd SET used = 0 WHERE used = 1")
-        query = cur.execute(fullQuery)
-        output = query.fetchone()
+    output = query.fetchone()
+
+# if all screensavers have been used in this cycle, reset the used column and reselect
+if output is None:       
+    cur.execute("UPDATE scrnsvrotd SET used = 0 WHERE used = 1")
+    query = cur.execute(fullQuery)
+    output = query.fetchone()
 
 bskyupload(output, date, pathdir, client)
 
