@@ -35,20 +35,26 @@ cur = conn.cursor()
 newQuery = "SELECT * FROM scrnsvrotd WHERE active=1 AND used=0 AND ytid IS NULL ORDER BY RANDOM()"
 fullQuery = "SELECT * FROM scrnsvrotd WHERE active=1 AND used=0 ORDER BY RANDOM()"
 
+def runQuery(queryStr):
+    query = cur.execute(queryStr)
+    output = query.fetchone()
+    return(output)
+
 # attemps to select new (not uploaded to youtube yet) screensavers first
-query = cur.execute(newQuery)
-output = query.fetchone()
+output = runQuery(newQuery)
 
 # attemps to select a previously uploaded, but unused in this cycle screensaver
 if output is None:
-    query = cur.execute(fullQuery)
-    output = query.fetchone()
+    output = runQuery(fullQuery)
 
-# if all screensavers have been used in this cycle, reset the used column and reselect
+# if all screensavers have been used in this cycle, reset the used column and reselect starting from the unuploaded ones
 if output is None:       
     cur.execute("UPDATE scrnsvrotd SET used = 0 WHERE used = 1")
-    query = cur.execute(fullQuery)
-    output = query.fetchone()
+    output = runQuery(newQuery)
+
+# if the cycle is brand new and there are no unuploaded screensavers
+if output is None:
+    output = runQuery(fullQuery)
 
 bskyupload(output, date, pathdir, client)
 
