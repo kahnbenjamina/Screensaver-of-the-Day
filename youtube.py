@@ -146,8 +146,8 @@ def initialize_upload(youtube, row, plid):
         f"Native OS: {row['os']}\n"
         f"Original Resolution: {row['vidheight']}x{row['vidwidth']}\n\n"
         f"More from this product: https://www.youtube.com/playlist?list={plid}\n\n"
-        f"For daily screensavers, check out the Screensaver of the Day Bluesky account: bsky.app/profile/screensaverotd.bsky.social\n"
-        f"For more information on the project, check out the FAQs: sotdfaq.neocities.org"
+        f"For daily screensavers, check out the Screensaver of the Day Bluesky account: https://bsky.app/profile/screensavermuseum.neocities.org\n"
+        f"For more information on the project, check out the FAQs: screensavermuseum.neocities.org"
       ),
       tags=['screensaver', 'screensavers' 'retrocomputing', 'screensavermuseum'],
       categoryId="28" # Science and Technology
