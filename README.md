@@ -1,12 +1,13 @@
 # Screensaver of the Day
 
 <p>This is a script that powers a Bluesky bot which posts a randomly selected pre-recorded screensaver video and some info about it from a database daily at 12:00 UTC.</p>
-<p>You can find the link to the bot <a href="https://bsky.app/profile/screensaverotd.bsky.social" target="_blank" rel="noopener noreferrer">here</a>.</p>
+<p>You can find the link to the bot <a href="https://bsky.app/profile/screensavermuseum.neocities.org" target="_blank" rel="noopener noreferrer">here</a>.</p>
 <p>It also has functionality to upload any unuploaded screensavers to the <a href="https://www.youtube.com/@ScreensaverMuseum" target="_blank" rel="noopener noreferrer">Screensaver Museum</a> YouTube channel.</p>
 <p>It collects data regarding engagement from the Bluesky and YouTube posting as well and saves it to a local database. It also reports these results weekly via email, a sample of which can be found in <code>SampleEmail.html</code>.
-<p>For a list of FAQs about this project: please visit the <a href="https://sotdfaq.neocities.org/" target="_blank" rel="noopener noreferrer">FAQs website</a>.</p>
+<p>For a list of FAQs about this project: please visit the <a href="https://screensavermuseum.neocities.org/" target="_blank" rel="noopener noreferrer">FAQs website</a>.</p>
+<p>The website portion of this project, previously a part of this repository, is hosted at <a href="https://github.com/kahnbenjamina/Screensaver-Museum" target="_blank" rel="noopener noreferrer">this repo</a>.</p>
 
-## Requirements
+## Requirements/Notes
 
 - <code>sotd.py</code> is the main file that drives the whole operation.
     - <code>bluesky.py</code> is the file that handles uploading to Bluesky and collecting related analytics.
@@ -21,14 +22,12 @@
 - Python requirements can be found in the file <code>requirements.txt</code>. It can be easily installed using <code>python install -r requirements.txt</code>.
 - A directory <code>videos</code> in the root directory of the project which contains .mp4 files titled following the keys in <code>ScreensaverOTD.db</code>. Note: videos uploaded to Bluesky must be **under 300 MB** and **under ten minutes** in length.
 - For YouTube uploads and analytics, you will need a <code>client_secrets.json</code> file which contains your Google OAuth client ID and secret variables. The Google Cloud Console should give an option to directly download this file. The YouTube Data API and Youtube Analytics API are necessary for this project.
-- NOTE: The refresh access tokens for Google OAuth expire after **7 days** and require manual browser-based reauthentication. The code currently accounts for token expiry errors in order to not break. In the future, I will look into ways around this, but from quick research, this just seems to be a built-in limitation. EDIT (2026-06-05): It seems like the OAuth expiry isn't actually a thing? Will do more testing.
 
 ## To Do
 
 - Logging
 - More robust analysis
 - Theme Days/Weeks
-- Full Website
 
 ## Version History/Changelog
 
@@ -55,3 +54,5 @@
 <em>2026-08-09</em>: Finally got the email recap functionality working fully properly. Saved an actual output of the functionality to <code>SampleEmail.html</code>. Also re-recorded several savers which did not meet new standards (must be at least 1 minute in length.)
 
 <em>2026-09-11</em>: Fixed a bug that occured when the program reached the end of a cycle of screensavers and did not properly move on to a new one. Added some more flair to the FAQ website. Database up to <em>158</em> recorded out of <em>198</em> total.
+
+<em>2026-11-05</em>: Spun off the website portion of this repository into <a href="https://github.com/kahnbenjamina/Screensaver-Museum" target="_blank" rel="noopener noreferrer">its own separate repo</a>. Small changes to reflect website name changes. Database up to <em>171</em> recorded out of <em>200</em> total.
